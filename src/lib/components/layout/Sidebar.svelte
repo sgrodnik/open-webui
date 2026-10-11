@@ -116,6 +116,7 @@
 
 	let selectedChatId = null;
 	let showRecentChats = false;
+	let recentChatsShortcutPending = false;
 	let wasSidebarOpen = false;
 
 	$: if ($showSidebar !== wasSidebarOpen) {
@@ -1172,6 +1173,28 @@
 						</Tooltip>
 					</div>
 
+					<div>
+						<Tooltip content={$i18n.t('Recent chats')} placement="right">
+							<button
+								class="flex size-8 cursor-pointer items-center justify-center transition group"
+								on:click={(e) => {
+									e.stopImmediatePropagation();
+									e.preventDefault();
+									showRecentChats = true;
+								}}
+								aria-label={$i18n.t('Recent chats')}
+							>
+								<div
+									class="self-center flex size-[calc(30px*var(--app-text-scale,1))] items-center justify-center rounded-lg transition group-hover:bg-gray-100 dark:group-hover:bg-gray-900 {recentChatsShortcutPending
+										? 'bg-red-500 text-white ring-2 ring-red-500 dark:bg-red-600'
+										: ''}"
+								>
+									<ClockIcon className="size-4" strokeWidth="1.5" />
+								</div>
+							</button>
+						</Tooltip>
+					</div>
+
 					{#each pinnedItems as itemId (itemId)}
 						{@const meta = getMenuItemMeta(itemId)}
 						{#if meta && isMenuItemVisible(itemId)}
@@ -1398,6 +1421,26 @@
 									<div class=" self-center text-[0.8125rem] leading-5">{$i18n.t('Search')}</div>
 								</div>
 								<HotkeyHint name="search" className=" hover-reveal " />
+							</button>
+						</div>
+
+						<div class="px-1 flex justify-center text-gray-700 dark:text-gray-300">
+							<button
+								id="sidebar-recent-chats-button"
+								class="group grow flex items-center space-x-2 rounded-xl px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none {recentChatsShortcutPending
+									? 'bg-red-100 text-red-700 ring-2 ring-red-500 dark:bg-red-900/50 dark:text-red-300'
+									: ''}"
+								on:click={() => (showRecentChats = true)}
+								aria-label={$i18n.t('Recent chats')}
+							>
+								<div class="self-center flex size-4 shrink-0 items-center justify-center">
+									<ClockIcon className="size-4" strokeWidth="1.5" />
+								</div>
+								<div class="flex flex-1 self-center translate-y-[0.5px]">
+									<div class="self-center text-[0.8125rem] leading-5">
+										{$i18n.t('Recent chats')}
+									</div>
+								</div>
 							</button>
 						</div>
 
@@ -1979,6 +2022,20 @@
 		{/if}
 	{/if}
 </MobileSwipePanel>
+
+<RecentChatsModal
+	bind:show={showRecentChats}
+	chatList={$chats}
+	currentChatId={$chatId || null}
+	onShortcutPendingChange={(pending: boolean) => (recentChatsShortcutPending = pending)}
+	onClose={() => (showRecentChats = false)}
+	onSelectChat={(id) => {
+		showRecentChats = false;
+		if ($mobile) showSidebar.set(false);
+		selectedFolder.set(null);
+		void goto(`/c/${id}`);
+	}}
+/>
 
 <style>
 	@media (max-width: 767px) {
