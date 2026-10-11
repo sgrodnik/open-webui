@@ -115,6 +115,16 @@
 	let shiftKey = false;
 
 	let selectedChatId = null;
+	let showRecentChats = false;
+	let wasSidebarOpen = false;
+
+	$: if ($showSidebar !== wasSidebarOpen) {
+		wasSidebarOpen = $showSidebar;
+		if ($mobile && $showSidebar) {
+			showRecentChats = true;
+		}
+	}
+
 	const selectedChatIds = writable(new Set<string>());
 	const selectionBusy = writable(false);
 	let selectionAnchor: string | null = null;
